@@ -1,0 +1,31 @@
+# Rust
+/target/
+Cargo.lock          # Excluded for libraries; include if this becomes a binary dist
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+models/*.egg-info/
+dist/
+.pytest_cache/
+.mypy_cache/
+
+# Godot
+game/.godot/
+game/export/
+*.import            # Do NOT ignore — these should be committed
+
+# Environment
+.env
+*.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/settings.json
+.idea/
+*.swp
