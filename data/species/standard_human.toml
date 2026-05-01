@@ -1,0 +1,50 @@
+[meta]
+name = "Standard Human"
+version = "0.1.0"
+description = "Baseline homo sapiens substrate parameters."
+
+[cognitive]
+temporal_discounting_rate = 0.72    # 0=linear/patient, 1=extreme hyperbolic
+cognitive_load_ceiling = 0.28       # 0=high capacity, 1=low capacity (heuristic-dominant)
+apophenia_coefficient = 0.76        # 0=literal, 1=pattern-saturated
+loss_aversion_coefficient = 2.3     # Symmetric=1.0; Standard Human ~2.3
+dunbar_number = 150                 # Hard social tracking limit
+
+[social]
+ingroup_detection_sensitivity = 0.68   # 0=cosmopolitan, 1=hair-trigger tribal
+reciprocal_altruism_radius = 0.45      # 0=kin-only, 1=diffuse altruism
+dominance_hierarchy_sensitivity = 0.71 # 0=rank-blind, 1=rank-saturated
+coalition_formation_instinct = 0.74    # 0=transactional, 1=identity-fused
+
+[stress]
+fight_weight = 0.38
+flight_weight = 0.42
+freeze_weight = 0.20
+stress_recovery_rate = 0.18         # 0=instant recovery, 1=permanent accumulation
+trauma_consolidation_threshold = 0.55  # 0=resilient, 1=easily marked
+
+[development]
+lifespan_years = 80
+stage_proportions = { development = 0.15, youth = 0.15, adult = 0.40, elder = 0.20, terminal = 0.10 }
+critical_period_sensitivity = 0.72  # 0=even plasticity, 1=early years are destiny
+intergenerational_trauma_coefficient = 0.15
+
+[heritability]
+openness = 0.57
+conscientiousness = 0.49
+extraversion = 0.54
+agreeableness = 0.42
+neuroticism = 0.48
+
+[heritability.covariance]
+# Upper triangle only; matrix is symmetric
+oc = -0.10
+oe =  0.05
+oa =  0.10
+on = -0.05
+ce =  0.05
+ca =  0.10
+cn = -0.15
+ea =  0.20
+en = -0.10
+an = -0.30
