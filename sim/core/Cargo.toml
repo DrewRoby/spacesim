@@ -1,0 +1,13 @@
+[package]
+name    = "spacesim-core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+spacesim-types = { path = "../types" }
+serde          = { workspace = true }
+rayon          = { workspace = true }
+petgraph       = { workspace = true }
+rand           = { workspace = true }
+anyhow         = { workspace = true }
+tracing        = { workspace = true }

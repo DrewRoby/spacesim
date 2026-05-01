@@ -1,0 +1,15 @@
+[package]
+name    = "spacesim-bindings"
+version = "0.1.0"
+edition = "2021"
+
+# PyO3 requires this to build a Python extension module
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+spacesim-types = { path = "../types" }
+pyo3           = { workspace = true }
+anyhow         = { workspace = true }
+tracing        = { workspace = true }
+serde_json     = { workspace = true }
