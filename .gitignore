@@ -6,7 +6,7 @@ Cargo.lock          # Excluded for libraries; include if this becomes a binary d
 __pycache__/
 *.pyc
 *.pyo
-.venv/
+venv-*/
 models/*.egg-info/
 dist/
 .pytest_cache/
@@ -15,7 +15,7 @@ dist/
 # Godot
 game/.godot/
 game/export/
-*.import            # Do NOT ignore — these should be committed
+*.import            # Do NOT ignore — these should be committed ##FUCK YOU CLAUDE YOU"RE NOT MY REAL DAD
 
 # Environment
 .env

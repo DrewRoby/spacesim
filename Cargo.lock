@@ -564,6 +564,7 @@ name = "spacesim-cli"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "pyo3",
  "spacesim-core",
  "spacesim-types",
  "tracing",
