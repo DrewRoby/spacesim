@@ -1,0 +1,31 @@
+# Produce commodities — primary satisfiers of micronutrient and fiber needs.
+
+[[commodity]]
+id          = "vegetables"
+name        = "Vegetables"
+description = "Leafy greens, roots, and brassicas. Micronutrient and fiber dense, low calorie."
+[commodity.satisfies]
+micronutrients = 0.85
+fiber          = 0.80
+hydration      = 0.20
+calories       = 0.15
+
+[[commodity]]
+id          = "fruit"
+name        = "Fruit"
+description = "Sweet botanical fruit. Micronutrients with carbohydrates and hydration."
+[commodity.satisfies]
+micronutrients = 0.70
+carbohydrates  = 0.40
+hydration      = 0.30
+fiber          = 0.35
+
+[[commodity]]
+id          = "tubers"
+name        = "Tubers"
+description = "Potatoes, yams, cassava. Calorie-dense roots with fiber and micronutrients."
+[commodity.satisfies]
+carbohydrates  = 0.70
+calories       = 0.55
+fiber          = 0.40
+micronutrients = 0.35

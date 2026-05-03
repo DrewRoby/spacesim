@@ -4,6 +4,13 @@
 
 from spacesim_models.substrate.species import SpeciesSubstrate
 from spacesim_models.substrate.propensities import compute_propensities
+from spacesim_models.needs import (
+    load_need_definitions,
+    PopulationNeeds,
+    compute_demand_vector,
+)
+from spacesim_models.commodities import load_commodity_dir
+from pathlib import Path
 
 
 def compute_propensities_from_toml(toml_path: str) -> dict[str, float]:
@@ -21,6 +28,32 @@ def compute_propensities_from_dict(substrate_params: dict) -> dict[str, float]:
     """Given a substrate parameter dict, return computed second-order propensities."""
     # Stub — implement when Rust needs to pass substrate state directly
     raise NotImplementedError("compute_propensities_from_dict not yet implemented")
+
+
+def compute_demand_from_needs(
+    needs_toml: str,
+    commodities_dir: str,
+    satiation_state: dict[str, float] | None = None,
+) -> dict[str, float]:
+    """Compute commodity demand vector from biological need states.
+
+    needs_toml      : path to a needs definition TOML (e.g. data/needs/biological_needs.toml)
+    commodities_dir : directory of commodity TOML files (e.g. data/commodities/)
+    satiation_state : {need_id: satiation} overrides; defaults to 0.5 for all needs
+
+    Returns {commodity_id: demand_pressure} in [0.0, 1.0].
+    Called by Rust via PyO3 each tick to drive market clearing.
+    """
+    definitions  = load_need_definitions(needs_toml)
+    commodities  = load_commodity_dir(commodities_dir)
+    pop_needs    = PopulationNeeds.default(definitions, satiation=0.5)
+
+    if satiation_state:
+        for need_id, satiation in satiation_state.items():
+            if need_id in pop_needs.states:
+                pop_needs.states[need_id].satiation = max(0.0, min(1.0, satiation))
+
+    return compute_demand_vector(pop_needs, commodities)
 
 
 def get_market_signals(population_state: dict) -> dict:
