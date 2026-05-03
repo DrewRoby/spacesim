@@ -33,25 +33,35 @@ def compute_propensities_from_dict(substrate_params: dict) -> dict[str, float]:
 def compute_demand_from_needs(
     needs_toml: str,
     commodities_dir: str,
-    satiation_state: dict[str, float] | None = None,
+    satiation_state: dict[str, float | tuple[float, float]] | None = None,
 ) -> dict[str, float]:
     """Compute commodity demand vector from biological need states.
 
     needs_toml      : path to a needs definition TOML (e.g. data/needs/biological_needs.toml)
     commodities_dir : directory of commodity TOML files (e.g. data/commodities/)
-    satiation_state : {need_id: satiation} overrides; defaults to 0.5 for all needs
+    satiation_state : per-need overrides; each value is either:
+                        float         → mean satiation, default variance (0.10)
+                        (float, float) → (mean, variance)
+                      defaults to mean=0.5, variance=0.10 for all needs
 
     Returns {commodity_id: demand_pressure} in [0.0, 1.0].
     Called by Rust via PyO3 each tick to drive market clearing.
     """
-    definitions  = load_need_definitions(needs_toml)
-    commodities  = load_commodity_dir(commodities_dir)
-    pop_needs    = PopulationNeeds.default(definitions, satiation=0.5)
+    definitions = load_need_definitions(needs_toml)
+    commodities = load_commodity_dir(commodities_dir)
+    pop_needs   = PopulationNeeds.default(definitions, mean=0.5, variance=0.10)
 
     if satiation_state:
-        for need_id, satiation in satiation_state.items():
-            if need_id in pop_needs.states:
-                pop_needs.states[need_id].satiation = max(0.0, min(1.0, satiation))
+        for need_id, override in satiation_state.items():
+            if need_id not in pop_needs.states:
+                continue
+            if isinstance(override, tuple):
+                mean, variance = override
+            else:
+                mean, variance = override, 0.10
+            state          = pop_needs.states[need_id]
+            state.mean     = max(0.0, min(1.0, mean))
+            state.variance = max(0.0, min(0.25, variance))
 
     return compute_demand_vector(pop_needs, commodities)
 
