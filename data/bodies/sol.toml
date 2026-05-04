@@ -1,0 +1,31 @@
+# Sol — the Sun. Reference star. All stellar values are normalized to Sol = 1.0.
+#
+# spectral_class : Morgan-Keenan classification
+# mass_solar     : M/M☉
+# radius_solar   : R/R☉
+# luminosity     : L/L☉ — total bolometric luminosity
+# temperature_k  : effective surface temperature in Kelvin
+# age_gyr        : current age in gigayears
+# metallicity    : fractional heavy-element abundance (Solar ≈ 0.014-0.022)
+#
+# Habitable zone is computed from luminosity; these are not stored here but
+# derived at runtime: HZ_inner ≈ sqrt(L/1.10) AU, HZ_outer ≈ sqrt(L/0.36) AU.
+
+[star]
+id             = "sol"
+name           = "Sol"
+spectral_class = "G2V"
+mass_solar     = 1.0000
+radius_solar   = 1.0000
+luminosity     = 1.0000
+temperature_k  = 5778
+age_gyr        = 4.603
+metallicity    = 0.0196   # approximately Solar photospheric value
+
+[star.notes]
+description = """
+The Sun. Spectral type G2V — a middle-aged, middle-mass main-sequence star.
+G-type stars are relatively rare (~7% of stars) but long-lived and stable.
+Sol is the calibration reference for all stellar parameters in the engine.
+"""
+category    = "yellow_dwarf"

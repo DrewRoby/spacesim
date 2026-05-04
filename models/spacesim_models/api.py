@@ -12,6 +12,13 @@ from spacesim_models.needs import (
     compute_demand_vector,
 )
 from spacesim_models.commodities import load_commodity_dir
+from spacesim_models.orbital import (
+    load_star,
+    load_planet,
+    compute_habitability_score,
+    compute_seasonal_cycle,
+    seasonal_temperature_range,
+)
 from pathlib import Path
 
 
@@ -158,6 +165,75 @@ def run_market_tick(
         nid: (s.mean, s.variance) for nid, s in pop_needs.states.items()
     }
     return new_satiation, demand
+
+
+def get_habitability_score(planet_toml: str, star_toml: str) -> dict[str, float]:
+    """Compute habitability scores for a planet orbiting a given star.
+
+    Returns a dict with keys: overall, temperature, gravity, pressure,
+    oxygen, radiation, water, tidal_lock — all in [0.0, 1.0].
+
+    Called by Rust to display planetary conditions alongside species data.
+    """
+    planet = load_planet(planet_toml)
+    star   = load_star(star_toml)
+    score  = compute_habitability_score(planet, star)
+    return score.as_dict()
+
+
+def compute_seasonal_supply_modifier(
+    planet_toml:  str,
+    star_toml:    str,
+    day_of_year:  int,
+) -> dict[str, float]:
+    """Per-commodity supply modifiers for a given day of the planetary year.
+
+    Returns {commodity_id: modifier} where modifier is a multiplier on
+    base_supply (1.0 = normal, < 1.0 = seasonal reduction, > 1.0 = peak harvest).
+
+    Also includes synthetic keys:
+        "_heating_demand" : heating fuel demand multiplier
+        "_cooling_demand" : cooling/refrigeration demand multiplier
+        "_t_surface_c"    : current surface temperature estimate in °C
+        "_growing_season" : fraction of year crops can grow [0, 1]
+
+    Called by Rust run_market_tick() to apply seasonal adjustments to supply.
+    """
+    planet = load_planet(planet_toml)
+    star   = load_star(star_toml)
+    cycle  = compute_seasonal_cycle(planet, star)
+
+    from spacesim_models.orbital.season import COMMODITY_CATEGORIES
+    modifiers: dict[str, float] = {}
+    for commodity_id in COMMODITY_CATEGORIES:
+        modifiers[commodity_id] = cycle.supply_modifier(day_of_year, commodity_id)
+
+    modifiers["_heating_demand"] = cycle.heating_demand_modifier(day_of_year)
+    modifiers["_cooling_demand"] = cycle.cooling_demand_modifier(day_of_year)
+    modifiers["_t_surface_c"]    = cycle.temperature_at_day(day_of_year)
+    modifiers["_growing_season"] = cycle.growing_season_fraction
+    return modifiers
+
+
+def get_seasonal_cycle_summary(planet_toml: str, star_toml: str) -> dict[str, float]:
+    """Return key annual metrics for a planet—star pair.
+
+    Keys: t_mean_c, t_summer_c, t_winter_c, growing_season_fraction,
+          growing_season_start_day, growing_season_end_day, orbital_period_days
+    """
+    planet = load_planet(planet_toml)
+    star   = load_star(star_toml)
+    cycle  = compute_seasonal_cycle(planet, star)
+    return {
+        "t_mean_c":                  cycle.t_mean_c,
+        "t_summer_c":                cycle.t_summer_c,
+        "t_winter_c":                cycle.t_winter_c,
+        "t_amplitude_c":             cycle.t_amplitude_c,
+        "growing_season_fraction":   cycle.growing_season_fraction,
+        "growing_season_start_day":  float(cycle.growing_season_start_day),
+        "growing_season_end_day":    float(cycle.growing_season_end_day),
+        "orbital_period_days":       cycle.orbital_period_days,
+    }
 
 
 def get_market_signals(population_state: dict) -> dict:
