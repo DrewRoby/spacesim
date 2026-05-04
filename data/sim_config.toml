@@ -1,0 +1,14 @@
+# Simulation configuration — global parameters for the tick loop.
+#
+# tick_days        : days each simulation tick represents (7 = weekly)
+# price_elasticity : α — base price adjustment per unit demand-supply gap
+#                    price_next = price × (1 + α × price_sensitivity × (demand − supply))
+#
+# starting_satiation_mean     : initial mean satiation for all needs [0, 1]
+# starting_satiation_variance : initial variance for all needs [0, 0.25]
+#                               0.10 ≈ moderate population spread
+
+tick_days                   = 7
+price_elasticity            = 0.15
+starting_satiation_mean     = 0.5
+starting_satiation_variance = 0.10

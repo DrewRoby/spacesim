@@ -25,14 +25,15 @@ class CommodityProfile:
     """
     Static definition of one commodity.
 
-    satisfies maps need_id → satisfaction per unit [0.0, 1.0].
-    A value of 1.0 means one unit fully satisfies that need.
-    Absent keys mean the commodity provides nothing for that need.
+    satisfies      maps need_id → satisfaction per unit [0.0, 1.0].
+    base_supply    daily per-capita supply in normalized units [0.0, 1.0].
+                   Used by market clearing to compute equilibrium prices.
     """
     id:          str
     name:        str
     description: str
     satisfies:   dict[str, float] = field(default_factory=dict)
+    base_supply: float = 0.0
 
 
 def load_commodity_file(toml_path: Path | str) -> list[CommodityProfile]:
@@ -48,6 +49,7 @@ def load_commodity_file(toml_path: Path | str) -> list[CommodityProfile]:
             name        = entry["name"],
             description = entry.get("description", ""),
             satisfies   = {k: float(v) for k, v in entry.get("satisfies", {}).items()},
+            base_supply = float(entry.get("base_supply", 0.0)),
         ))
     return profiles
 

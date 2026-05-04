@@ -4,8 +4,10 @@
 
 from spacesim_models.substrate.species import SpeciesSubstrate
 from spacesim_models.substrate.propensities import compute_propensities
+from spacesim_models.substrate.modifiers import propensities_to_modifiers
 from spacesim_models.needs import (
     load_need_definitions,
+    NeedState,
     PopulationNeeds,
     compute_demand_vector,
 )
@@ -64,6 +66,98 @@ def compute_demand_from_needs(
             state.variance = max(0.0, min(0.25, variance))
 
     return compute_demand_vector(pop_needs, commodities)
+
+
+def get_behavior_modifiers_from_toml(toml_path: str) -> dict[str, float]:
+    """Load species TOML, compute propensities, and map them to market behavior modifiers.
+
+    Returns a flat dict with five modifier values:
+        demand_amplifier, supply_hoarding, price_sensitivity,
+        cooperation_discount, speculation_premium
+    """
+    substrate = SpeciesSubstrate.from_toml(toml_path)
+    props     = compute_propensities(substrate)
+    mods      = propensities_to_modifiers(props.as_dict())
+    return {
+        "demand_amplifier":     mods.demand_amplifier,
+        "supply_hoarding":      mods.supply_hoarding,
+        "price_sensitivity":    mods.price_sensitivity,
+        "cooperation_discount": mods.cooperation_discount,
+        "speculation_premium":  mods.speculation_premium,
+    }
+
+
+def load_base_supplies(commodities_dir: str) -> dict[str, float]:
+    """Return {commodity_id: base_supply_per_day} for all commodities in a directory.
+
+    Called once by Rust at startup to populate WorldState.base_supply.
+    """
+    commodities = load_commodity_dir(commodities_dir)
+    return {c.id: c.base_supply for c in commodities}
+
+
+def run_market_tick(
+    needs_toml:       str,
+    commodities_dir:  str,
+    satiation_state:  dict[str, tuple[float, float]],
+    effective_supply: dict[str, float],
+    tick_days:        int,
+) -> tuple[dict[str, tuple[float, float]], dict[str, float]]:
+    """Advance biological needs one tick and compute commodity demand.
+
+    Called by Rust each simulation tick via PyO3.
+
+    satiation_state  : {need_id: (mean, variance)} — current satiation distribution
+    effective_supply : {commodity_id: supply_per_day} — base_supply × (1 - hoarding)
+    tick_days        : days this tick represents
+
+    Tick sequence:
+        1. Decay all needs by decay_rate_per_day × tick_days
+        2. Satisfy needs: for each commodity in effective_supply, compute
+           satisfy_amount = supply × tick_days × satisfies[need], apply to need
+        3. Compute demand vector from updated need states
+
+    Returns (new_satiation_state, demand_vector) where:
+        new_satiation_state = {need_id: (new_mean, new_variance)}
+        demand_vector       = {commodity_id: demand [0.0, 1.0]}
+    """
+    definitions   = load_need_definitions(needs_toml)
+    commodities   = load_commodity_dir(commodities_dir)
+    commodity_map = {c.id: c for c in commodities}
+
+    pop_needs = PopulationNeeds(states={
+        d.id: NeedState(
+            d,
+            *satiation_state.get(d.id, (0.5, 0.10)),
+        )
+        for d in definitions
+    })
+
+    # 1. Decay
+    for state in pop_needs.states.values():
+        state.decay(state.definition.decay_rate_per_day * tick_days)
+
+    # 2. Satisfy from effective supply
+    for commodity_id, supply_per_day in effective_supply.items():
+        if supply_per_day <= 0.0:
+            continue
+        commodity = commodity_map.get(commodity_id)
+        if commodity is None:
+            continue
+        for need_id, satisfaction_value in commodity.satisfies.items():
+            need_state = pop_needs.states.get(need_id)
+            if need_state is None:
+                continue
+            amount = supply_per_day * tick_days * satisfaction_value
+            need_state.satisfy(amount)
+
+    # 3. Demand vector
+    demand = compute_demand_vector(pop_needs, commodities)
+
+    new_satiation = {
+        nid: (s.mean, s.variance) for nid, s in pop_needs.states.items()
+    }
+    return new_satiation, demand
 
 
 def get_market_signals(population_state: dict) -> dict:

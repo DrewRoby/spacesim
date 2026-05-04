@@ -1,26 +1,29 @@
 # Fat commodities — primary satisfiers of lipid and calorie needs.
 
 [[commodity]]
-id          = "cooking_oil"
-name        = "Cooking Oil"
-description = "Pressed plant oil (olive, sunflower, palm). Pure lipid energy."
+id             = "cooking_oil"
+name           = "Cooking Oil"
+description    = "Pressed plant oil (olive, sunflower, palm). Pure lipid energy."
+base_supply    = 0.018
 [commodity.satisfies]
 lipids   = 1.00
 calories = 0.90
 
 [[commodity]]
-id          = "butter"
-name        = "Butter"
-description = "Churned dairy fat. High calorie, high lipid, trace micronutrients."
+id             = "butter"
+name           = "Butter"
+description    = "Churned dairy fat. High calorie, high lipid, trace micronutrients."
+base_supply    = 0.012
 [commodity.satisfies]
 lipids         = 0.85
 calories       = 0.80
 micronutrients = 0.10
 
 [[commodity]]
-id          = "nuts"
-name        = "Nuts"
-description = "Tree nuts and seeds. Dense fat and protein with fiber and micronutrients."
+id             = "nuts"
+name           = "Nuts"
+description    = "Tree nuts and seeds. Dense fat and protein with fiber and micronutrients."
+base_supply    = 0.015
 [commodity.satisfies]
 lipids         = 0.70
 protein        = 0.35

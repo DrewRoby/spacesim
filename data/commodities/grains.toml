@@ -1,9 +1,10 @@
 # Grain commodities — primary satisfiers of carbohydrate and calorie needs.
 
 [[commodity]]
-id          = "grain"
-name        = "Grain"
-description = "Raw cereal grain (wheat, rice, maize). Requires processing before consumption."
+id             = "grain"
+name           = "Grain"
+description    = "Raw cereal grain (wheat, rice, maize). Requires processing before consumption."
+base_supply    = 0.040
 [commodity.satisfies]
 carbohydrates = 0.80
 calories      = 0.65
@@ -11,9 +12,10 @@ protein       = 0.10
 fiber         = 0.20
 
 [[commodity]]
-id          = "bread"
-name        = "Bread"
-description = "Processed grain loaf. Ready to eat — higher bioavailability than raw grain."
+id             = "bread"
+name           = "Bread"
+description    = "Processed grain loaf. Ready to eat — higher bioavailability than raw grain."
+base_supply    = 0.030
 [commodity.satisfies]
 carbohydrates = 0.75
 calories      = 0.60
@@ -21,9 +23,10 @@ protein       = 0.12
 fiber         = 0.15
 
 [[commodity]]
-id          = "pasta"
-name        = "Pasta"
-description = "Extruded wheat dough. Dense caloric staple."
+id             = "pasta"
+name           = "Pasta"
+description    = "Extruded wheat dough. Dense caloric staple."
+base_supply    = 0.020
 [commodity.satisfies]
 carbohydrates = 0.80
 calories      = 0.70
@@ -31,9 +34,10 @@ protein       = 0.14
 fiber         = 0.10
 
 [[commodity]]
-id          = "rice"
-name        = "Rice"
-description = "Polished or whole grain rice. Low fiber unless unpolished."
+id             = "rice"
+name           = "Rice"
+description    = "Polished or whole grain rice. Low fiber unless unpolished."
+base_supply    = 0.035
 [commodity.satisfies]
 carbohydrates = 0.85
 calories      = 0.68

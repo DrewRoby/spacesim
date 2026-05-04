@@ -74,12 +74,13 @@ def urgency_from_distribution(
 @dataclass(frozen=True)
 class NeedDefinition:
     """Static spec for one biological need. Loaded from TOML, never mutated."""
-    id:          str
-    name:        str
-    tier:        str   # "survival" | "security" | ...
-    description: str
-    steepness:   float
-    midpoint:    float
+    id:                 str
+    name:               str
+    tier:               str   # "survival" | "security" | ...
+    description:        str
+    steepness:          float
+    midpoint:           float
+    decay_rate_per_day: float  # mean satiation lost per day at zero supply
 
     def urgency(self, mean: float, variance: float) -> float:
         return urgency_from_distribution(mean, variance, self.steepness, self.midpoint)
@@ -168,11 +169,12 @@ def load_need_definitions(toml_path: Path | str) -> list[NeedDefinition]:
     definitions = []
     for entry in data.get("need", []):
         definitions.append(NeedDefinition(
-            id          = entry["id"],
-            name        = entry["name"],
-            tier        = entry["tier"],
-            description = entry.get("description", ""),
-            steepness   = float(entry["steepness"]),
-            midpoint    = float(entry["midpoint"]),
+            id                 = entry["id"],
+            name               = entry["name"],
+            tier               = entry["tier"],
+            description        = entry.get("description", ""),
+            steepness          = float(entry["steepness"]),
+            midpoint           = float(entry["midpoint"]),
+            decay_rate_per_day = float(entry.get("decay_rate_per_day", 0.03)),
         ))
     return definitions
