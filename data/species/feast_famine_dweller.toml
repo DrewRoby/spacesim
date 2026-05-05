@@ -1,0 +1,90 @@
+# Feast-Famine Dweller — species evolved on a high-eccentricity K-dwarf super-Earth.
+#
+# Physical environment: ~43% growing season, mean annual -1°C, summer 28°C,
+# winter -31°C, high orbital eccentricity (0.26), steep axial tilt (34°),
+# 272-day year. Must produce and store full-year caloric surplus in short window.
+#
+# Evolutionary pressures (computed from feast_famine_world.toml + orange_dwarf.toml):
+#   resource_volatility : 0.864  (severe feast-famine cycling)
+#   thermal_danger      : 0.404  (genuine cold-death risk in long winters)
+#   survival_scarcity   : 0.569  (only 43% growing season — long off-season to survive)
+#   cognitive_demand    : 0.616  (complex storage logistics, calendar precision, planning)
+#   group_dependence    : 0.516  (communal granaries, winter sharing)
+#   predation_proxy     : 0.252  (relatively open terrain, lower ambush pressure)
+#
+# Key behavioral signatures:
+#   - MUCH HIGHER temporal discounting (0.80 vs 0.72): shorter planning horizon
+#     because the future is extremely uncertain — a bad harvest kills you THIS year.
+#     Paradoxically, must also plan storage — creating a bimodal urgency pattern.
+#   - HIGH loss aversion (2.54 vs 2.30): missed harvests have catastrophic consequences;
+#     near-maximal sensitivity to downside risk.
+#   - Dunbar number ≈ human baseline (152): similar social group size, moderate cooperation.
+#   - Very HIGH apophenia (0.96 vs 0.76): pattern detection in weather, plant phenology,
+#     and animal behavior is life-or-death; false positives tolerated over false negatives.
+#   - HIGHER critical period sensitivity (0.76): early childhood famine exposure has
+#     outsized metabolic and behavioral effects; development is highly front-loaded.
+#   - Balanced fight/flight (0.29/0.43): large body, open terrain; flight more viable
+#     than in constrained environments; fight reserved for resource defense.
+
+[meta]
+name        = "Feast-Famine Dweller"
+version     = "0.1.0"
+description = """
+A species shaped by the brutal rhythm of a high-eccentricity world: a brief,
+frantic summer growing season followed by a long, killing winter. The result
+is a species with extremely sharp pattern recognition (every weather cue matters),
+high loss aversion, and a bimodal urgency response — act NOW during the harvest,
+plan CAREFULLY for winter storage, then survive on those stores for six months.
+They make exceptional short-term opportunists and surprisingly good strategic planners,
+but the combination produces a distinctive anxious-productive personality profile.
+High apophenia makes them prone to finding patterns in noise — weather divination,
+seasonal omens, and superstitious ritual around planting and harvest are culturally
+near-universal in this substrate.
+"""
+
+[cognitive]
+temporal_discounting_rate  = 0.80   # high urgency — future is uncertain, harvest window is now
+cognitive_load_ceiling     = 0.36   # moderate heuristic use; complex logistics require deliberation
+apophenia_coefficient      = 0.96   # near-maximum pattern detection; weather/phenology is life-or-death
+loss_aversion_coefficient  = 2.54   # elevated above human; missed harvests are catastrophic
+dunbar_number              = 152    # near-human baseline; moderate cooperative band
+
+[social]
+ingroup_detection_sensitivity   = 0.58  # moderate in-group sensitivity; granary sharing requires trust
+reciprocal_altruism_radius      = 0.53  # slightly wider than human; winter sharing extends trust
+dominance_hierarchy_sensitivity = 0.54  # moderate rank sensitivity; resource allocation needs order
+coalition_formation_instinct    = 0.50  # moderate; harvest-labor coalitions, but not identity-fused
+
+[stress]
+fight_weight   = 0.29   # lower fight; open terrain favors avoidance over confrontation
+flight_weight  = 0.43   # elevated flight; escape is viable in open landscape
+freeze_weight  = 0.29   # freeze approximately equal to fight; blizzard shelter viable
+stress_recovery_rate            = 0.29  # moderate; chronic seasonal stress is normal, partial recovery
+trauma_consolidation_threshold  = 0.58  # elevated; famine events produce lasting trauma imprinting
+
+[development]
+lifespan_years = 72    # slightly shorter lifespan; high metabolic stress, brutal winters
+stage_proportions = { development = 0.15, youth = 0.15, adult = 0.40, elder = 0.20, terminal = 0.10 }
+critical_period_sensitivity          = 0.76  # elevated; childhood famine exposure has lifelong metabolic effects
+intergenerational_trauma_coefficient = 0.24  # elevated; famine years echo across generations (epigenetic)
+
+[heritability]
+# Heritability structure shifted toward conscientiousness (storage discipline),
+# neuroticism (seasonal anxiety is adaptive), and openness (pattern exploration)
+openness          = 0.62   # elevated; pattern exploration is fitness-relevant (weather reading)
+conscientiousness = 0.55   # elevated; storage discipline and harvest timing critical
+extraversion      = 0.50   # near-average; social during harvest season, withdrawn in winter
+agreeableness     = 0.40   # slightly reduced; resource scarcity increases in-group competition
+neuroticism       = 0.58   # elevated; anxiety is adaptive when catastrophic winters loom
+
+[heritability.covariance]
+oc = -0.08   # weaker O-C anticorrelation; both are fitness-positive here
+oe =  0.05
+oa =  0.08
+on =  0.02   # slight positive O-N; anxious pattern-seekers are the fitness optimum
+ce =  0.04
+ca =  0.08
+cn = -0.10   # weaker C-N anticorrelation; conscientious anxiety is adaptive
+ea =  0.18
+en = -0.08
+an = -0.35   # stronger A-N anticorrelation; resource stress sharpens aggression-anxiety axis

@@ -12,6 +12,7 @@ from .insolation import (
     time_mean_insolation,
 )
 from .season import SeasonalCycle, compute_seasonal_cycle, COMMODITY_CATEGORIES
+from .pressure import EvolutionaryPressure, compute_evolutionary_pressure, pressure_to_substrate_params
 
 __all__ = [
     "StarDefinition",   "load_star",
@@ -28,4 +29,7 @@ __all__ = [
     "SeasonalCycle",
     "compute_seasonal_cycle",
     "COMMODITY_CATEGORIES",
+    "EvolutionaryPressure",
+    "compute_evolutionary_pressure",
+    "pressure_to_substrate_params",
 ]

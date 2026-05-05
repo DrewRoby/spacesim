@@ -1,0 +1,69 @@
+# Terminator World — tidally locked rocky planet orbiting a red dwarf.
+#
+# Orbital parameters calibrated so the planet sits inside the habitable zone
+# of red_dwarf.toml (L=0.004 L☉, HZ ≈ 0.060–0.105 AU).
+#
+# Tidal locking means:
+#   - Permanent day side: extreme heat (~60–90°C at substellar point)
+#   - Permanent night side: extreme cold (~-90°C)
+#   - Terminator strip (±20° of day/night boundary): stable, temperate, ~10–20°C
+#   - "Seasons" are minimal — the same faces always point the same way.
+#
+# Surface gravity slightly below Earth (0.88g) — smaller rocky body.
+# Thick CO2-heavy atmosphere helps redistribute heat from day to night side.
+# Water present in terminator zone rivers and lakes; frozen on night side.
+#
+# Physical implications for inhabitants:
+#   - Resources concentrated in the terminator band (~10% of surface area)
+#   - No seasonal variation → highly predictable food supply
+#   - Constant UV/flare exposure on day side pushes settlement underground
+#     or to the sheltered terminator
+#   - Spatial scarcity (narrow habitable band) drives dense settlement
+
+[planet]
+id               = "terminator_world"
+name             = "Terminator World"
+star_id          = "red_dwarf"
+semi_major_axis  = 0.0650   # AU — inside red dwarf HZ
+eccentricity     = 0.0800   # slightly eccentric — tidal circularisation incomplete
+axial_tilt       = 2.00     # nearly zero — locking erases tilt precession
+orbital_period   = 11.40    # days — derived: T = sqrt(a³/M*) × 365.25
+rotation_period  = 11.40    # days — synchronous rotation = tidally locked
+tidally_locked   = true
+periapsis_day    = 3
+
+mass_earth      = 0.7500
+radius_earth    = 0.9100
+surface_gravity = 8.80      # m/s² — derived from mass/radius
+magnetic_field  = 0.5500    # weaker than Earth; moderate flare shielding
+
+albedo                = 0.280   # slightly darker than Earth (less ice, dark rock)
+atmospheric_pressure  = 1.200   # denser atmosphere aids heat redistribution
+o2_fraction           = 0.190   # slightly lower O₂
+co2_ppm               = 800     # elevated CO₂ for greenhouse redistribution
+greenhouse_delta_k    = 38.0    # stronger greenhouse from CO₂ + pressure
+
+water_fraction = 0.320   # water mostly in terminator zone and night-side ice
+land_fraction  = 0.680
+
+[planet.notes]
+description = """
+A classic tidally locked rocky world in the habitable zone of a red dwarf.
+Life exists in a permanent twilight belt ~200–400 km wide where temperatures
+are temperate year-round. The day side is a scorched wasteland; the night side
+is a frozen, airless void. Inhabitants face intense UV and stellar flares,
+driving selection for underground shelter, social coordination within the strip,
+and dense, cooperative settlement patterns.
+
+No seasons means extremely predictable agriculture — but any crop failure is
+permanent, not cyclical, and spatial constraints limit expansion.
+"""
+evolutionary_notes = """
+Expected evolutionary pressures:
+  - High group_dependence (narrow habitable band forces dense cooperation)
+  - Low resource_volatility (year-round growing season, predictable light)
+  - Low thermal_danger (temperate terminator strip)
+  - High cognitive_demand (managing UV/flare timing, 3D underground architecture)
+  - Moderate predation_proxy (spatial confinement, no escape routes)
+  - Low survival_scarcity (food year-round) but high spatial_scarcity
+"""

@@ -1,0 +1,31 @@
+# Orange Dwarf — K3V star. Between Sun and M-dwarf in size and activity.
+#
+# K-dwarfs (~12% of stars) are sometimes called the "Goldilocks stars":
+# longer-lived than G-dwarfs, less flare-active than M-dwarfs, and their
+# habitable zones are wide enough to avoid routine tidal locking.
+# Planets can have Earth-like rotation and seasons.
+#
+# Luminosity 0.320 L☉ puts the habitable zone at ~0.54–0.94 AU:
+#   HZ_inner ≈ sqrt(0.32/1.10) ≈ 0.539 AU
+#   HZ_outer ≈ sqrt(0.32/0.36) ≈ 0.943 AU
+
+[star]
+id             = "orange_dwarf"
+name           = "Orange Dwarf"
+spectral_class = "K3V"
+mass_solar     = 0.7800
+radius_solar   = 0.7400
+luminosity     = 0.3200
+temperature_k  = 4700
+age_gyr        = 8.200
+metallicity    = 0.0180
+
+[star.notes]
+description = """
+A mid-K dwarf — the "sweet spot" for long-lived stable habitability.
+K-dwarfs live 15–40 Gyr on the main sequence (vs 10 Gyr for Sol),
+have lower UV output, and produce fewer dangerous flares than M-dwarfs.
+The habitable zone at 0.54–0.94 AU allows free-rotating planets with
+Earth-like day length and genuine seasons.
+"""
+category = "orange_dwarf"

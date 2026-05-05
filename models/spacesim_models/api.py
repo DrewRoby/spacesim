@@ -18,6 +18,8 @@ from spacesim_models.orbital import (
     compute_habitability_score,
     compute_seasonal_cycle,
     seasonal_temperature_range,
+    compute_evolutionary_pressure,
+    pressure_to_substrate_params,
 )
 from pathlib import Path
 
@@ -234,6 +236,53 @@ def get_seasonal_cycle_summary(planet_toml: str, star_toml: str) -> dict[str, fl
         "growing_season_end_day":    float(cycle.growing_season_end_day),
         "orbital_period_days":       cycle.orbital_period_days,
     }
+
+
+def generate_species_from_environment(
+    planet_toml: str,
+    star_toml:   str,
+) -> dict:
+    """Derive species substrate parameters from a planet–star environment.
+
+    Computes the six-dimensional EvolutionaryPressure vector from the physical
+    world parameters (orbit, temperature, tidal locking, etc.) and maps it to
+    SpeciesSubstrate parameter values via calibrated linear functions.
+
+    Returns a dict with keys:
+        "pressures"   : {resource_volatility, thermal_danger, survival_scarcity,
+                         cognitive_demand, group_dependence, predation_proxy}
+        "cognitive"   : {temporal_discounting_rate, cognitive_load_ceiling,
+                         apophenia_coefficient, loss_aversion_coefficient, dunbar_number}
+        "social"      : {ingroup_detection_sensitivity, reciprocal_altruism_radius,
+                         dominance_hierarchy_sensitivity, coalition_formation_instinct}
+        "stress"      : {fight_weight, flight_weight, freeze_weight,
+                         stress_recovery_rate, trauma_consolidation_threshold}
+        "development" : {critical_period_sensitivity, intergenerational_trauma_coefficient}
+
+    Intended use: seed a new species TOML, or pass directly to SpeciesSubstrate
+    constructors for programmatic world-building.
+    """
+    planet   = load_planet(planet_toml)
+    star     = load_star(star_toml)
+    pressure = compute_evolutionary_pressure(planet, star)
+    params   = pressure_to_substrate_params(pressure)
+    return {"pressures": pressure.as_dict(), **params}
+
+
+def get_evolutionary_pressure(
+    planet_toml: str,
+    star_toml:   str,
+) -> dict[str, float]:
+    """Return just the six evolutionary pressure values for a planet–star pair.
+
+    Values are in [0.0, 1.0]:
+        resource_volatility, thermal_danger, survival_scarcity,
+        cognitive_demand, group_dependence, predation_proxy
+    """
+    planet   = load_planet(planet_toml)
+    star     = load_star(star_toml)
+    pressure = compute_evolutionary_pressure(planet, star)
+    return pressure.as_dict()
 
 
 def get_market_signals(population_state: dict) -> dict:
