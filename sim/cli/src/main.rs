@@ -5,11 +5,13 @@
 //!   cargo run -p spacesim-cli -- --ticks 52 --species data/species/standard_human.toml
 //!   cargo run -p spacesim-cli -- --ticks 52 --config data/sim_config.toml \
 //!                                            --species data/species/standard_human.toml
+//!   cargo run -p spacesim-cli -- --ticks 0 --ipc    # run forever, stream to Godot
 
 use anyhow::{Context, Result};
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use spacesim_core::WorldState;
+use spacesim_ipc::{IpcServer, protocol::SimMessage};
 use spacesim_types::{
     config::SimConfig,
     modifiers::BehaviorModifiers,
@@ -17,11 +19,13 @@ use spacesim_types::{
 };
 use std::collections::HashMap;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 // ── CLI args ──────────────────────────────────────────────────────────────────
 
 struct Args {
-    ticks:            u64,
+    ticks:            u64,   // 0 = run forever (IPC mode)
+    ipc:              bool,  // launch the TCP server for Godot
     species_path:     Option<PathBuf>,
     config_path:      PathBuf,
     needs_toml:       PathBuf,
@@ -31,6 +35,7 @@ struct Args {
 fn parse_args() -> Args {
     let args: Vec<String> = std::env::args().collect();
     let mut ticks           = 10u64;
+    let mut ipc             = false;
     let mut species_path    = None;
     let mut config_path     = PathBuf::from("data/sim_config.toml");
     let mut needs_toml      = PathBuf::from("data/needs/biological_needs.toml");
@@ -39,6 +44,7 @@ fn parse_args() -> Args {
     while i < args.len() {
         match args[i].as_str() {
             "--ticks"       => { i += 1; if let Some(v) = args.get(i) { ticks = v.parse().unwrap_or(10); } }
+            "--ipc"         => { ipc = true; }
             "--species"     => { i += 1; if let Some(v) = args.get(i) { species_path = Some(PathBuf::from(v)); } }
             "--config"      => { i += 1; if let Some(v) = args.get(i) { config_path = PathBuf::from(v); } }
             "--needs"       => { i += 1; if let Some(v) = args.get(i) { needs_toml = PathBuf::from(v); } }
@@ -47,7 +53,9 @@ fn parse_args() -> Args {
         }
         i += 1;
     }
-    Args { ticks, species_path, config_path, needs_toml, commodities_dir }
+    // --ipc implies run forever unless a finite tick count was explicitly given
+    if ipc && ticks == 10 { ticks = 0; }
+    Args { ticks, ipc, species_path, config_path, needs_toml, commodities_dir }
 }
 
 // ── ANSI colors ───────────────────────────────────────────────────────────────
@@ -223,7 +231,8 @@ fn print_modifiers(mods: &BehaviorModifiers) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(
             std::env::var("RUST_LOG").unwrap_or_else(|_| "spacesim=info".to_string()),
@@ -341,9 +350,27 @@ fn main() -> Result<()> {
         modifiers.clone(),
     )?;
 
+    // ── IPC server (optional) ─────────────────────────────────────────────────
+    let ipc: Option<Arc<IpcServer>> = if args.ipc {
+        let server = Arc::new(IpcServer::new());
+        let srv    = Arc::clone(&server);
+        tokio::spawn(async move { srv.run().await.expect("IPC server error") });
+        println!("  {CYAN}IPC server started — waiting for Godot on port 7777{RESET}");
+        // Brief pause so the listener is ready before the first tick
+        tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+        Some(server)
+    } else {
+        None
+    };
+
     // ── Tick loop ─────────────────────────────────────────────────────────────
+    let run_forever = args.ticks == 0;
     println!("\n{BOLD}{WHITE}{}{RESET}", "─".repeat(70));
-    println!("  {BOLD}Simulation{RESET}  ({} ticks × {} days)", args.ticks, config.tick_days);
+    if run_forever {
+        println!("  {BOLD}Simulation{RESET}  (running until Ctrl-C × {} days/tick)", config.tick_days);
+    } else {
+        println!("  {BOLD}Simulation{RESET}  ({} ticks × {} days)", args.ticks, config.tick_days);
+    }
     println!("{BOLD}{WHITE}{}{RESET}", "─".repeat(70));
 
     // Track previous prices for movement arrows
@@ -351,9 +378,12 @@ fn main() -> Result<()> {
         .map(|(id, m)| (id.clone(), m.price))
         .collect();
 
-    tracing::info!(ticks = args.ticks, "Starting headless simulation run");
+    tracing::info!(ticks = args.ticks, ipc = args.ipc, "Starting simulation run");
 
-    for _ in 0..args.ticks {
+    let mut tick_num = 0u64;
+    loop {
+        if !run_forever && tick_num >= args.ticks { break; }
+
         let eff_supply = world.effective_supply();
 
         let (new_satiation, demand) = run_market_tick_py(
@@ -367,6 +397,11 @@ fn main() -> Result<()> {
         let snapshot = world.apply_tick(new_satiation, demand);
         let mean_sat = world.mean_satiation();
 
+        // Broadcast to Godot if IPC is active
+        if let Some(ref server) = ipc {
+            server.broadcast(&SimMessage::MarketUpdate(snapshot.clone()));
+        }
+
         print_tick_header(snapshot.tick, world.config.tick_days, mean_sat);
 
         // Sort commodities by demand descending for readability
@@ -377,6 +412,13 @@ fn main() -> Result<()> {
             let prev = prev_prices.get(&c.id).copied().unwrap_or(1.0);
             print_market_row(&c.id, c.price, c.demand, c.supply, prev);
             prev_prices.insert(c.id.clone(), c.price);
+        }
+
+        tick_num += 1;
+
+        // In IPC mode, pace the sim at roughly 1 tick/second so Godot can follow
+        if run_forever {
+            tokio::time::sleep(std::time::Duration::from_millis(1000)).await;
         }
     }
 

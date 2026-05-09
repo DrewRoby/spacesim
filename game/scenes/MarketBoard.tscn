@@ -1,0 +1,31 @@
+[gd_scene load_steps=2 format=3 uid="uid://market_board"]
+
+[ext_resource type="Script" path="res://scripts/MarketBoard.gd" id="1_market"]
+
+[node name="MarketBoard" type="PanelContainer"]
+script = ExtResource("1_market")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Header" type="Label" parent="VBox"]
+text = "COMMODITIES"
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+
+[node name="TickRow" type="HBoxContainer" parent="VBox"]
+
+[node name="TickLabel" type="Label" parent="VBox/TickRow"]
+text = "—"
+theme_override_colors/font_color = Color(0.5, 0.8, 1.0, 1)
+theme_override_font_sizes/font_size = 12
+
+[node name="Scroll" type="ScrollContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = SIZE_EXPAND_FILL
+
+[node name="Table" type="VBoxContainer" parent="VBox/Scroll"]
+layout_mode = 2
+size_flags_horizontal = SIZE_EXPAND_FILL
+theme_override_constants/separation = 4

@@ -1,0 +1,20 @@
+[gd_scene load_steps=2 format=3 uid="uid://needs_panel"]
+
+[ext_resource type="Script" path="res://scripts/NeedsPanel.gd" id="1_needs"]
+
+[node name="NeedsPanel" type="PanelContainer"]
+script = ExtResource("1_needs")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Header" type="Label" parent="VBox"]
+text = "POPULATION NEEDS"
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+
+[node name="Bars" type="VBoxContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = SIZE_EXPAND_FILL
+theme_override_constants/separation = 6
