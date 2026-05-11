@@ -1,0 +1,74 @@
+# Biological needs — the substrate-level requirements that drive Tier 1 demand.
+#
+# Each need has an urgency curve parameterized by steepness and midpoint.
+# Urgency is computed as: sigmoid(1 - satiation, steepness, midpoint)
+# so urgency approaches 1.0 as satiation approaches 0.0.
+#
+# steepness : how sharply urgency rises as satiation falls (higher = more cliff-like)
+# midpoint  : the satiation level where urgency is 0.5 (lower = tolerates deprivation longer)
+#
+# tier maps to the Maslow layer this need feeds into. "survival" needs starved
+# to zero suppress all higher-tier behavior entirely.
+
+[[need]]
+id                 = "hydration"
+name               = "Hydration"
+tier               = "survival"
+description        = "Water content required for cellular function and thermoregulation."
+steepness          = 4.0    # Dehydration urgency spikes fast — days not weeks
+midpoint           = 0.35   # Already urgent at 65% satiation
+decay_rate_per_day = 0.07   # Severe dehydration in ~3 days at zero supply
+
+[[need]]
+id                 = "calories"
+name               = "Calories"
+tier               = "survival"
+description        = "Total energy intake required to sustain metabolic function."
+steepness          = 2.5
+midpoint           = 0.40
+decay_rate_per_day = 0.04
+
+[[need]]
+id                 = "protein"
+name               = "Protein"
+tier               = "survival"
+description        = "Amino acids for tissue repair, enzyme synthesis, and immune function."
+steepness          = 2.0
+midpoint           = 0.45
+decay_rate_per_day = 0.03
+
+[[need]]
+id                 = "lipids"
+name               = "Lipids"
+tier               = "survival"
+description        = "Dietary fats for hormone synthesis, neural insulation, and fat-soluble vitamins."
+steepness          = 1.8
+midpoint           = 0.45
+decay_rate_per_day = 0.025
+
+[[need]]
+id                 = "carbohydrates"
+name               = "Carbohydrates"
+tier               = "survival"
+description        = "Primary fuel for brain and muscle. Deprivation causes cognitive degradation."
+steepness          = 2.0
+midpoint           = 0.40
+decay_rate_per_day = 0.04
+
+[[need]]
+id                 = "fiber"
+name               = "Dietary Fiber"
+tier               = "security"
+description        = "Roughage for gut microbiome health and long-term metabolic stability."
+steepness          = 1.4
+midpoint           = 0.50   # Slower onset — weeks not days
+decay_rate_per_day = 0.015
+
+[[need]]
+id                 = "micronutrients"
+name               = "Micronutrients"
+tier               = "security"
+description        = "Vitamins and minerals. Deficiency degrades slowly but compoundingly."
+steepness          = 1.5
+midpoint           = 0.50
+decay_rate_per_day = 0.015

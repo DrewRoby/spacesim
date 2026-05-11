@@ -1,0 +1,70 @@
+# Feast-Famine World — high-eccentricity super-Earth orbiting an orange dwarf.
+#
+# Orbital parameters: a=0.75 AU, e=0.26, tilt=34°.
+# The K3V star (L=0.32 L☉) puts this planet inside the HZ (0.54–0.94 AU).
+#
+# The combination of high eccentricity and steep axial tilt creates extreme
+# seasonal swings:
+#   - Summer (periapsis + high-tilt insolation): ~45–50°C in temperate zone
+#   - Winter (apoapsis + low insolation): ~-15 to -25°C
+#   - Growing season ~44% of the year (vs ~73% for Earth)
+#
+# Insolation at periapsis vs apoapsis:
+#   r_peri = 0.75 × (1−0.26) = 0.555 AU → S_peri = 0.32/0.555² ≈ 1038 W/m²
+#   r_apo  = 0.75 × (1+0.26) = 0.945 AU → S_apo  = 0.32/0.945² ≈ 358 W/m²
+#   Ratio: 2.9× — nearly triple the insolation peak-to-trough
+#
+# Super-Earth (1.7 M_earth, 1.2 R_earth): higher surface gravity (11.5 m/s²),
+# denser atmosphere, strong magnetic field. Large water oceans help buffer
+# thermal extremes via oceanic heat capacity.
+
+[planet]
+id               = "feast_famine_world"
+name             = "Feast-Famine World"
+star_id          = "orange_dwarf"
+semi_major_axis  = 0.7500   # AU — inside orange dwarf HZ
+eccentricity     = 0.2600   # high eccentricity — strong insolation variation
+axial_tilt       = 34.00    # steep tilt — amplifies seasons beyond Earth
+orbital_period   = 272.00   # days ≈ 0.745 Earth years (sqrt(0.75³/0.78) × 365.25)
+rotation_period  = 21.50    # hours — slightly longer day than Earth
+tidally_locked   = false
+periapsis_day    = 40       # northern hemisphere summer near periapsis
+
+mass_earth      = 1.7000
+radius_earth    = 1.2000
+surface_gravity = 11.50     # m/s² — higher gravity, slightly above Earth
+magnetic_field  = 1.4000    # strong field from larger iron core
+
+albedo                = 0.290   # slightly lower than Earth (warmer climate)
+atmospheric_pressure  = 1.400   # denser atmosphere from larger mass
+o2_fraction           = 0.210   # similar to Earth
+co2_ppm               = 380     # moderate CO₂
+greenhouse_delta_k    = 50.0    # enhanced greenhouse needed at this distance from a dim star
+
+water_fraction = 0.640   # large oceans buffer thermal swings
+land_fraction  = 0.360
+
+[planet.notes]
+description = """
+A massive rocky world with dramatic feast-and-famine seasons driven by both
+high orbital eccentricity and steep axial tilt. Mean annual temperature is just
+below freezing (-1°C), but summers warm to +28°C during the brief growing window
+while winters plunge to -31°C. The growing season covers only ~43% of the year,
+forcing inhabitants to produce and store massive agricultural surpluses in a short
+window before the long bitter winter. Higher gravity (1.17g) subtly discourages
+tall structures and endurance activity. Large oceans buffer the worst extremes but
+cannot eliminate the fundamental seasonal rhythm.
+
+The planet completes its year in only 272 days — a 'year' feels short. Orbital
+velocity at periapsis is noticeably faster than at apoapsis (Kepler's second law),
+creating a psychologically significant acceleration and deceleration of seasons.
+"""
+evolutionary_notes = """
+Expected evolutionary pressures:
+  - Very high resource_volatility (44% growing season, 2.9× insolation swing)
+  - High thermal_danger (summer heat stress, winter cold)
+  - High survival_scarcity (long non-growing season to survive)
+  - Moderate cognitive_demand (planning, storage logistics, calendar)
+  - Moderate group_dependence (need to cooperate for storage/winter sharing)
+  - Low predation_proxy (large body, open terrain — visible threat environment)
+"""

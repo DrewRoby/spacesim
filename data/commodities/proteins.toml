@@ -1,0 +1,44 @@
+# Protein commodities — primary satisfiers of protein and calorie needs.
+
+[[commodity]]
+id             = "meat"
+name           = "Meat"
+description    = "Animal muscle tissue. Dense protein with significant fat and calories."
+base_supply    = 0.025
+[commodity.satisfies]
+protein  = 0.85
+lipids   = 0.45
+calories = 0.70
+
+[[commodity]]
+id             = "fish"
+name           = "Fish"
+description    = "Aquatic animal flesh. High protein, lower fat than land meat, micronutrient-rich."
+base_supply    = 0.018
+[commodity.satisfies]
+protein        = 0.80
+lipids         = 0.25
+calories       = 0.55
+micronutrients = 0.25
+
+[[commodity]]
+id             = "eggs"
+name           = "Eggs"
+description    = "Complete protein source with fat and micronutrients."
+base_supply    = 0.022
+[commodity.satisfies]
+protein        = 0.70
+lipids         = 0.40
+calories       = 0.50
+micronutrients = 0.30
+
+[[commodity]]
+id             = "legumes"
+name           = "Legumes"
+description    = "Beans, lentils, and pulses. High protein and fiber, low fat — the people's protein."
+base_supply    = 0.030
+[commodity.satisfies]
+protein       = 0.60
+carbohydrates = 0.35
+fiber         = 0.65
+calories      = 0.45

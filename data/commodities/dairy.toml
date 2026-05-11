@@ -1,0 +1,24 @@
+# Dairy commodities — protein, fat, and micronutrient sources from animal milk.
+
+[[commodity]]
+id             = "milk"
+name           = "Milk"
+description    = "Whole animal milk. Balanced protein, fat, and micronutrients with hydration."
+base_supply    = 0.028
+[commodity.satisfies]
+protein        = 0.45
+lipids         = 0.35
+micronutrients = 0.50
+hydration      = 0.40
+calories       = 0.40
+
+[[commodity]]
+id             = "cheese"
+name           = "Cheese"
+description    = "Aged concentrated milk. Dense protein, fat, and micronutrients — low hydration."
+base_supply    = 0.018
+[commodity.satisfies]
+protein        = 0.65
+lipids         = 0.60
+micronutrients = 0.55
+calories       = 0.65

@@ -1,0 +1,30 @@
+# Red Dwarf — M4V flare star. Fictitious but physically representative.
+#
+# M-dwarfs are the most common stars (~75% of the Milky Way) and produce
+# habitable zones very close in, making tidal locking common for rocky planets.
+# They have long main-sequence lifetimes (tens to hundreds of Gyr) but emit
+# frequent UV/X-ray flares that stress surface life.
+#
+# Luminosity 0.004 L☉ puts the habitable zone at ~0.065 AU:
+#   HZ_inner ≈ sqrt(0.004/1.10) ≈ 0.060 AU
+#   HZ_outer ≈ sqrt(0.004/0.36) ≈ 0.105 AU
+
+[star]
+id             = "red_dwarf"
+name           = "Red Dwarf"
+spectral_class = "M4V"
+mass_solar     = 0.2500
+radius_solar   = 0.2600
+luminosity     = 0.0040
+temperature_k  = 3200
+age_gyr        = 6.800
+metallicity    = 0.0150
+
+[star.notes]
+description = """
+A typical mid-M dwarf — dim, cool, long-lived, and prone to UV flares.
+The habitable zone sits at ~0.065 AU, close enough for tidal locking
+to be essentially certain for rocky planets with orbital periods of ~11 days.
+High flare activity makes atmospheric erosion a genuine threat over Gyr timescales.
+"""
+category = "red_dwarf"

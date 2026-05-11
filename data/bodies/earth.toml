@@ -1,0 +1,69 @@
+# Earth — the reference planet. All habitability scores are normalized so Earth = 1.0.
+#
+# ── Orbital parameters ──────────────────────────────────────────────────────
+# semi_major_axis : mean orbital radius in AU
+# eccentricity    : orbital eccentricity [0, 1); 0 = circular
+# axial_tilt      : obliquity in degrees — primary driver of seasonal amplitude
+# orbital_period  : days per year (derived: 365.25 × sqrt(a³/M_star), stored for convenience)
+# rotation_period : hours per day; tidal locking occurs when ≈ orbital_period × 24
+# tidally_locked  : true if planet always presents the same face to the star
+# periapsis_day   : day of year nearest the star (Earth: ~Jan 3 ≈ day 3)
+#
+# ── Physical parameters ─────────────────────────────────────────────────────
+# mass_earth      : M/M⊕
+# radius_earth    : R/R⊕
+# surface_gravity : m/s² (derived: 9.81 × mass_earth / radius_earth²)
+# magnetic_field  : strength relative to Earth; protects against stellar wind stripping
+# albedo          : Bond albedo [0, 1]; fraction of incoming radiation reflected
+#
+# ── Atmosphere ──────────────────────────────────────────────────────────────
+# atmospheric_pressure : surface pressure in atm
+# o2_fraction          : O₂ mole fraction [0, 1]
+# co2_ppm              : CO₂ concentration in parts per million
+# greenhouse_delta_k   : surface warming above T_eq from greenhouse gases (K)
+#                        Earth: T_eq ≈ 255 K, T_surface ≈ 288 K → Δ = +33 K
+#
+# ── Surface ─────────────────────────────────────────────────────────────────
+# water_fraction : fraction of surface covered by ocean or ice
+# land_fraction  : fraction of surface available as continental land
+
+[planet]
+id             = "earth"
+name           = "Earth"
+star_id        = "sol"
+
+# Orbital
+semi_major_axis  = 1.0000
+eccentricity     = 0.0167
+axial_tilt       = 23.44
+orbital_period   = 365.25
+rotation_period  = 24.00
+tidally_locked   = false
+periapsis_day    = 3
+
+# Physical
+mass_earth      = 1.0000
+radius_earth    = 1.0000
+surface_gravity = 9.81
+magnetic_field  = 1.0000
+albedo          = 0.306
+
+# Atmosphere
+atmospheric_pressure = 1.000
+o2_fraction          = 0.210
+co2_ppm              = 420
+greenhouse_delta_k   = 33.0
+
+# Surface
+water_fraction = 0.710
+land_fraction  = 0.290
+
+[planet.notes]
+description = """
+Earth. The calibration reference for all habitability math. Equilibrium temperature
+~255 K; actual surface ~288 K (+33 K greenhouse). Axial tilt of 23.44° produces
+moderate seasons: ~15°C amplitude in temperate zones, ~267-day growing season.
+Magnetic field protects against UV and cosmic radiation. Liquid water ocean covers
+71% of surface.
+"""
+category = "terrestrial"

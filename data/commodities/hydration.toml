@@ -1,0 +1,30 @@
+# Hydrating commodities — primary satisfiers of the hydration need.
+
+[[commodity]]
+id             = "water"
+name           = "Water"
+description    = "Pure water. The baseline hydration commodity."
+base_supply    = 0.055   # per-capita per-day; water is relatively abundant
+[commodity.satisfies]
+hydration = 1.00
+calories  = 0.00
+
+[[commodity]]
+id             = "fruit_juice"
+name           = "Fruit Juice"
+description    = "Pressed fruit liquid. Hydrating with a carbohydrate and micronutrient bonus."
+base_supply    = 0.015
+[commodity.satisfies]
+hydration      = 0.65
+carbohydrates  = 0.30
+micronutrients = 0.20
+
+[[commodity]]
+id             = "broth"
+name           = "Broth"
+description    = "Simmered bone or vegetable stock. Hydrating with trace protein and electrolytes."
+base_supply    = 0.012
+[commodity.satisfies]
+hydration      = 0.70
+protein        = 0.10
+micronutrients = 0.15

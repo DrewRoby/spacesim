@@ -1,0 +1,59 @@
+[gd_scene load_steps=4 format=3 uid="uid://main_scene"]
+
+[ext_resource type="Script"      path="res://scripts/Main.gd"          id="1_main"]
+[ext_resource type="PackedScene" path="res://scenes/MarketBoard.tscn"   id="2_market"]
+[ext_resource type="PackedScene" path="res://scenes/NeedsPanel.tscn"    id="3_needs"]
+
+; ── Root ──────────────────────────────────────────────────────────────────────
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right  = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_main")
+
+; ── Outer VBox (status bar on top, content below) ────────────────────────────
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right  = 1.0
+anchor_bottom = 1.0
+theme_override_constants/separation = 0
+
+; ── Status bar ────────────────────────────────────────────────────────────────
+
+[node name="StatusBar" type="HBoxContainer" parent="VBox"]
+custom_minimum_size = Vector2(0, 28)
+theme_override_constants/separation = 8
+
+[node name="ConnDot" type="Label" parent="VBox/StatusBar"]
+text = "●"
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(1, 0.35, 0.35, 1)
+
+[node name="StatusText" type="Label" parent="VBox/StatusBar"]
+text = "Connecting…"
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.65, 0.65, 0.65, 1)
+
+; ── Content row ───────────────────────────────────────────────────────────────
+
+[node name="ContentRow" type="HBoxContainer" parent="VBox"]
+size_flags_vertical = SIZE_EXPAND_FILL
+theme_override_constants/separation = 12
+
+; ── Market board (left, wide) ─────────────────────────────────────────────────
+
+[node name="MarketBoard" parent="VBox/ContentRow" instance=ExtResource("2_market")]
+layout_mode = 2
+size_flags_horizontal = SIZE_EXPAND_FILL
+size_flags_stretch_ratio = 3.0
+
+; ── Needs panel (right, narrower) ────────────────────────────────────────────
+
+[node name="NeedsPanel" parent="VBox/ContentRow" instance=ExtResource("3_needs")]
+layout_mode = 2
+size_flags_horizontal = SIZE_EXPAND_FILL
+size_flags_stretch_ratio = 1.5

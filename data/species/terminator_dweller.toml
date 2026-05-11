@@ -1,0 +1,89 @@
+# Terminator Dweller — species evolved on a tidally locked M-dwarf world.
+#
+# Physical environment: narrow habitable terminator strip (~200-400 km wide),
+# year-round stable temperatures (10-20°C), no seasons, high UV/flare exposure,
+# forced dense cooperative settlement in constrained space.
+#
+# Evolutionary pressures (computed from terminator_world.toml + red_dwarf.toml):
+#   resource_volatility : 0.098  (very stable — no seasons in the strip)
+#   thermal_danger      : 0.574  (flare UV + permanent day-side lethality)
+#   survival_scarcity   : 0.250  (year-round food, but spatially constrained)
+#   cognitive_demand    : 0.492  (UV timing, underground 3D navigation)
+#   group_dependence    : 0.750  (narrow strip forces tight cooperative settlement)
+#   predation_proxy     : 0.476  (high land fraction, constrained terrain)
+#
+# Key behavioral signatures:
+#   - Much LOWER temporal discounting than humans (0.44 vs 0.72):
+#     stable resources make long-term planning strongly rewarded.
+#   - LOWER loss aversion (1.51 vs 2.30): predictable environment reduces
+#     catastrophic downside scenarios; steady-state thinking dominates.
+#   - HIGHER dunbar number (207 vs 150): dense strip settlement selects for
+#     larger stable social tracking — you cannot avoid your neighbors.
+#   - MUCH WIDER reciprocal altruism radius (0.68 vs 0.45): everyone in the
+#     strip is "in-group"; diffuse altruism within the community pays off.
+#   - HIGHER coalition formation (0.66 vs 0.74): strong but not identity-fused;
+#     cooperative networks rather than exclusive in-group cliques.
+#   - HIGH trauma consolidation (0.58): flare events are sudden and severe —
+#     single-trial learning from UV exposures is strongly selected.
+#   - Balanced fight/flight/freeze (0.33/0.37/0.30): constrained terrain
+#     makes pure flight difficult; freeze-and-shelter is equally viable.
+
+[meta]
+name        = "Terminator Dweller"
+version     = "0.1.0"
+description = """
+A species evolved in the narrow habitable terminator strip of a tidally locked
+M-dwarf world. Stable year-round resources produced remarkably patient planners,
+while forced spatial density in the terminator band bred wide social networks
+and diffuse altruism. High UV and flare exposure created intense single-event
+trauma consolidation. The combination of cooperative density and low loss
+aversion makes these beings natural long-horizon traders who extend trust
+broadly but remember betrayal sharply.
+"""
+
+[cognitive]
+temporal_discounting_rate  = 0.44   # very patient — stable environment rewards long-horizon plans
+cognitive_load_ceiling     = 0.31   # below-human heuristic reliance; more deliberate
+apophenia_coefficient      = 0.41   # low pattern-saturation — constant environment has fewer false signals
+loss_aversion_coefficient  = 1.51   # significantly lower than humans; less catastrophic-loss history
+dunbar_number              = 207    # larger stable social network from dense strip settlement
+
+[social]
+ingroup_detection_sensitivity   = 0.74  # high tribal sensitivity — strip boundaries are hard
+reciprocal_altruism_radius      = 0.68  # very wide; nearly everyone in strip is effective kin
+dominance_hierarchy_sensitivity = 0.52  # moderate; hierarchy less critical in cooperative band
+coalition_formation_instinct    = 0.66  # strong cooperative networking, not purely identity-fused
+
+[stress]
+fight_weight   = 0.33   # balanced with flight and freeze
+flight_weight  = 0.37   # moderate; some escape options (deeper into strip)
+freeze_weight  = 0.30   # shelter-in-place viable during UV flares
+stress_recovery_rate            = 0.17  # relatively fast; stable environment reduces chronic stress
+trauma_consolidation_threshold  = 0.58  # elevated; flare events produce lasting single-trial learning
+
+[development]
+lifespan_years = 75
+stage_proportions = { development = 0.15, youth = 0.15, adult = 0.40, elder = 0.20, terminal = 0.10 }
+critical_period_sensitivity          = 0.62  # moderate early sensitivity; stable environment reduces extremes
+intergenerational_trauma_coefficient = 0.23  # moderately elevated from UV/flare generational trauma
+
+[heritability]
+# Heritability structure slightly shifted toward agreeableness (cooperative selection)
+# and away from neuroticism (stable environment reduces fitness cost of calm)
+openness          = 0.55
+conscientiousness = 0.52   # elevated; planning pays off in stable long-horizon environment
+extraversion      = 0.56   # slightly elevated; dense social environment rewards sociability
+agreeableness     = 0.52   # elevated; cooperation in constrained space is critical
+neuroticism       = 0.40   # reduced; chronic anxiety less adaptive in stable environment
+
+[heritability.covariance]
+oc = -0.10
+oe =  0.08   # slightly stronger O-E link (curious + social in dense settlement)
+oa =  0.15   # stronger O-A link (openness and agreeableness co-selected in cooperative band)
+on = -0.08
+ce =  0.05
+ca =  0.15   # stronger C-A (conscientious + agreeable = reliable group member)
+cn = -0.18
+ea =  0.25   # stronger E-A (social density rewards both extraversion and agreeableness)
+en = -0.12
+an = -0.25   # weaker A-N anticorrelation (less existential anxiety overall)

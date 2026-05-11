@@ -7,3 +7,6 @@ pub mod signals;
 pub mod population;
 pub mod market;
 pub mod propensities;
+pub mod commodity;
+pub mod config;
+pub mod modifiers;
