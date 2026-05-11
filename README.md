@@ -43,11 +43,11 @@ whole pipeline run while individual components are still being designed.
 
 | Layer | Technology | Role |
 |---|---|---|
-| Behavioral modeling | Python | Personality math, needs engine, demographic model |
+| Behavioral modeling | Python | Personality math, needs engine, orbital physics, demographic model |
 | Simulation engine | Rust | Tick loop, market clearing, world state, agent decisions |
-| Game frontend | Godot 4 (.NET) | Rendering, UI, input, IPC client |
+| Game frontend | Godot 4 | Rendering, UI, input, IPC client |
 | Asset pipeline | Meshy → Blender → Godot | AI-generated 3D assets, cleanup, import |
-| Game data | TOML | Species, factions, commodities, events — owned by nobody, read by everyone |
+| Game data | TOML | Species, stellar bodies, commodities, events — owned by nobody, read by everyone |
 
 The three layers are independently runnable. The Python model runs and tests
 without Rust. The Rust sim runs headless without Godot. Godot can display mock
@@ -62,31 +62,35 @@ spacesim/
 ├── sim/                    # Rust workspace (5 crates)
 │   ├── types/              # Shared types — no logic, imported by everything
 │   ├── core/               # Tick engine, world state, market clearing
-│   ├── ipc/                # IPC server (Rust ↔ Godot bridge)
+│   ├── ipc/                # IPC TCP server (Rust ↔ Godot, port 7777)
 │   ├── bindings/           # PyO3 bindings (Rust ↔ Python bridge)
-│   └── cli/                # Headless runner — dev and test tool
+│   └── cli/                # Headless runner — dev, test, and IPC host tool
 ├── models/                 # Python behavioral model package
 │   └── spacesim_models/
 │       ├── substrate/      # Species biological substrate + propensity math
-│       ├── personality/    # OCEAN trait system
-│       ├── lifecycle/      # Lifecycle stages, demographic model, heritability
-│       ├── needs/          # Maslow-derived needs hierarchy
-│       ├── behavior/       # Decision modules, stress, memory, social
-│       ├── archetypes/     # Emergent clustering (not yet implemented)
+│       ├── needs/          # Maslow-derived needs hierarchy and urgency curves
+│       ├── commodities/    # Commodity loading and satisfaction profiles
+│       ├── orbital/        # Orbital mechanics, insolation physics, seasonal cycles
+│       │   ├── star.py     # StarDefinition, habitable zone, UV flux
+│       │   ├── planet.py   # PlanetDefinition, derived orbital parameters
+│       │   ├── insolation.py  # Kepler solver, T_eq, habitability scoring
+│       │   ├── season.py   # SeasonalCycle, supply modifiers by commodity category
+│       │   └── pressure.py # EvolutionaryPressure → SpeciesSubstrate mapping
 │       └── api.py          # The only surface Rust calls into
 ├── game/                   # Godot 4 project
-│   ├── scenes/             # UI scenes (galaxy map, market, designer, dashboard)
-│   ├── scripts/            # GDScript + C# source
-│   └── assets/             # Ships, stations, environments, UI
+│   ├── scenes/             # Main.tscn, MarketBoard.tscn, NeedsPanel.tscn
+│   └── scripts/            # SimClient.gd (autoload), MarketBoard.gd, NeedsPanel.gd, Main.gd
 ├── data/                   # Shared game configuration (TOML)
-│   ├── species/            # Species substrate presets
-│   ├── factions/           # Faction definitions
-│   ├── commodities/        # Commodity table
-│   └── events/             # Probabilistic event templates
-├── tools/                  # Developer utilities
-│   ├── validate_repo.py    # Structure checker
-│   ├── bootstrap_stubs.py  # Stub file generator
-│   └── run_propensities.py # Standalone Python model runner
+│   ├── species/            # standard_human, terminator_dweller, feast_famine_dweller
+│   ├── bodies/             # sol, earth, red_dwarf, terminator_world,
+│   │                       #   orange_dwarf, feast_famine_world
+│   ├── commodities/        # 19 commodities across 6 category files
+│   ├── needs/              # biological_needs.toml (7 needs, 2 tiers)
+│   └── events/             # Probabilistic event templates (not yet implemented)
+├── tests/                  # Shell-based test suite
+│   ├── lib.sh              # assert_python helper
+│   ├── run_all.sh          # Runs all suites
+│   └── python/             # 8 test suites, ~100 assertions
 └── docs/                   # Design documents
 ```
 
@@ -94,11 +98,33 @@ spacesim/
 
 ## The Model
 
-### Layer 0: Biological Substrate
+### Layer 0: Orbital Physics → Evolutionary Pressure
 
-Before personality, each species has a fixed biological substrate — the
-hardware that psychology runs on. Standard Human values are defined in
-`data/species/standard_human.toml`. Substrate parameters include:
+Before species, planets have physics. The `orbital` package computes:
+
+- **Stellar parameters:** luminosity, habitable zone bounds, UV flux
+- **Planetary parameters:** equilibrium temperature, surface temperature,
+  seasonal amplitude, growing season fraction
+- **Habitability score:** geometric mean of 7 Gaussian subscores (temperature,
+  gravity, pressure, oxygen, radiation, water, tidal lock) — Earth ≈ 1.0
+- **Seasonal supply modifiers:** per-commodity multipliers each tick based on
+  whether the planet is in growing season (agricultural drops to 0.20× floor
+  in deep winter; baseline goods are always 1.0×)
+- **Evolutionary pressure:** 6-dimensional vector (resource\_volatility,
+  thermal\_danger, survival\_scarcity, cognitive\_demand, group\_dependence,
+  predation\_proxy) derived from orbital parameters, used to seed species
+  substrate values via calibrated linear formulas
+
+Reference bodies: `sol.toml` + `earth.toml`. Included variants:
+- **Red dwarf + terminator world** — tidally locked M4V rocky world at 0.065 AU;
+  low seasonal volatility, high group dependence, year-round growing strip
+- **Orange dwarf + feast-famine world** — high-eccentricity K3V super-Earth;
+  43% growing season, brutal winters, near-maximum apophenia pressure
+
+### Layer 1: Biological Substrate
+
+Each species has a fixed biological substrate — the hardware that psychology
+runs on. Defined in `data/species/*.toml`. Parameters:
 
 - **Cognitive:** temporal discounting rate, cognitive load ceiling, apophenia
   coefficient, loss aversion coefficient, Dunbar number
@@ -107,85 +133,109 @@ hardware that psychology runs on. Standard Human values are defined in
 - **Stress:** fight/flight/freeze weights, stress recovery rate, trauma
   consolidation threshold
 - **Development:** lifespan, stage proportions, critical period sensitivity,
-  intergenerational trauma transmission coefficient
+  intergenerational trauma coefficient
 - **Heritability:** per-trait OCEAN heritability coefficients and genetic
   covariance matrix
 
-These parameters are what differ between species (races) in the game. A species
-with a loss aversion coefficient of 5.0 instead of 2.3 produces a fundamentally
-different civilization even with identical OCEAN distributions.
+Included presets: `standard_human`, `terminator_dweller` (patient, wide
+altruism, Dunbar 207), `feast_famine_dweller` (urgent, high loss aversion,
+near-max apophenia). New presets can be authored by hand or derived
+automatically from a planet+star pair via `generate_species_from_environment()`.
 
-### Layer 1: Second-Order Propensities
+### Layer 2: Second-Order Propensities
 
-Substrate parameters are not displayed raw — they are transformed into ten
-readable civilizational propensities that describe what the species is *like*:
-short-termism, tribalism ceiling, volatility under stress, stratification
-tendency, ideological susceptibility, cooperative radius, generational memory
-depth, innovation rate baseline, political instability cycle, and loss aversion
-premium.
+Substrate parameters are transformed into ten readable civilizational
+propensities: short-termism, tribalism ceiling, volatility under stress,
+stratification tendency, ideological susceptibility, cooperative radius,
+generational memory depth, innovation rate baseline, political instability
+cycle, and loss aversion premium.
 
 Propensities are outputs, not inputs. Moving a substrate slider changes the
-propensity readout in real time. This is the designer UI's feedback loop.
+propensity readout. This is the designer feedback loop.
 
-### Layer 2: OCEAN Trait Distributions
+### Layer 3: Needs and Demand
 
-On top of the substrate, each population has a distribution of OCEAN
-(Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism)
-scores — a mean and variance per trait, plus genetic correlation structure.
-This distribution evolves over generations through the lifecycle model.
+Seven biological needs (hydration, calories, protein, lipids, carbohydrates,
+fiber, micronutrients) across two tiers (survival, security). Each need has a
+continuous satiation state, a non-linear urgency curve (sigmoid parameterized
+by steepness and midpoint), and a `decay_rate_per_day`. The demand vector is
+the urgency-weighted need signal combined with the commodity satisfaction table.
 
-### Layer 3: Needs Hierarchy
+### Layer 4: Market Clearing
 
-OCEAN traits modulate a five-tier needs hierarchy (survival, security,
-belonging, esteem, transcendence). Each tier has a continuous satiation state
-and a non-linear urgency curve. Urgency signals combine in a priority mixer
-that produces the demand vector consumed by the market.
+Prices update each tick via:
 
-### Layer 4: Lifecycle and Heritability
+```
+price_next = price × (1 + α × price_sensitivity × (demand − supply))
+           × (1 + speculation_premium × demand)
+           × (1 − cooperation_discount × (1 − demand))
+```
 
-Populations evolve through births, development, mate selection, and death.
-Trait inheritance is modeled with per-trait heritability coefficients, genetic
-covariance, environmental developmental effects, and genuine stochastic noise.
-Assortative mating causes trait distributions to cluster over generations —
-economic classes emerge from the math rather than being authored.
+where `α` is the base elasticity and the three multipliers come from species
+behavior modifiers. Price history is retained (rolling 104-week buffer) for
+charting. The market clearing formula is structurally complete — the parameters
+and weights need calibration work as more game context accumulates.
+
+### Layer 5: OCEAN and Lifecycle
+
+Defined in types but not yet implemented in the tick loop. The architecture
+is in place; the demographic model is the major remaining gap in the simulation
+core.
 
 ---
 
 ## Current Status
 
-### Working
+### Working end-to-end
 
-- Rust workspace builds cleanly — 5 crates, full dependency graph
-- Headless sim runner ticks correctly (`cargo run -p spacesim-cli -- --ticks N`)
-- Python package structure with all submodule directories
-- `SpeciesSubstrate` dataclass with full validation and TOML loading
-- `compute_propensities()` with real weighted math across all ten propensities
-- `tools/run_propensities.py` produces colored terminal output against Standard
-  Human and comparison variant species
-- `data/species/standard_human.toml` — complete Standard Human parameter preset
+- **Rust → Python bridge** (PyO3): fully operational; Rust calls Python each
+  tick for need decay, satisfaction, and demand computation
+- **Headless sim runner**: ticks correctly with species, config, and all 19
+  commodities (`cargo run -p spacesim-cli -- --ticks N --species ...`)
+- **Orbital physics pipeline**: star loading, planet loading, insolation,
+  equilibrium temperature, seasonal temperature range, growing season fraction,
+  habitability scoring — all validated against Earth reference values
+- **Seasonal supply modifiers**: per-commodity multipliers applied each tick
+  based on day-of-year and planet parameters
+- **Evolutionary pressure → substrate**: `compute_evolutionary_pressure()` +
+  `pressure_to_substrate_params()` maps physical world parameters to species
+  substrate values; handles tidal lock edge case correctly
+- **Needs engine**: 7 needs, urgency curves, decay, satisfaction from supply,
+  full demand vector computation
+- **Market clearing engine**: price discovery formula is implemented and running;
+  produces plausible convergent behavior — needs calibration and richer dynamics
+- **IPC TCP server**: `sim/ipc` broadcasts newline-delimited JSON `MarketUpdate`
+  messages to all connected Godot clients each tick; `Ping/Pong` works;
+  `TradeOrder` is received and logged (queue integration pending)
+- **Godot project scaffold**: `game/` is a valid Godot 4 project with
+  `SimClient.gd` autoload (TCP reconnect, signal dispatch), `MarketBoard`
+  (live price table, color-coded, trend arrows), `NeedsPanel` (satiation bars),
+  and `Main` root scene
+- **Test suite**: 12 suites, ~100 assertions — all passing
 
-### In Progress
+### Done in form, needs significant work
 
-- **Rust → Python bridge:** PyO3 integration in `sim/cli` is written but
-  blocked on Python environment configuration. The bridge calls
-  `spacesim_models.api.compute_propensities_from_toml()` and renders the
-  result in Rust. Likely fix: trim `pyproject.toml` to stdlib-only dependencies
-  until each heavy package is actually needed.
+- **Market clearing**: the formula runs and produces convergent prices, but
+  price elasticity, speculation premium, cooperation discount, and hoarding
+  coefficients are not yet calibrated against meaningful gameplay targets.
+  Multi-node trade routing, supply shocks, and player intervention mechanics
+  are not yet modeled.
+- **Godot UI**: the scaffold connects and displays live data, but has no
+  styling, no price history charts, no world map, no player interaction beyond
+  the structural `send_trade_order()` call, and no scene beyond the single
+  market/needs dashboard.
 
-- **`sim/types/src/propensities.rs`:** Rust `Propensities` struct is written
-  and awaits a clean build to integrate.
+### Not yet started
 
-### Not Yet Started
-
-- IPC server (Rust ↔ Godot bridge)
-- Market clearing engine
-- World graph (star systems, trade routes)
-- Commodity definitions
-- Godot frontend (requires Godot 4 .NET build)
-- Lifecycle and demographic model implementation
-- Needs engine implementation
-- Archetype clustering
+- World graph (star systems, trade routes, node topology)
+- OCEAN trait distributions and per-population state
+- Lifecycle and demographic model
 - Faction agent logic
+- Archetype clustering
+- Player interaction mechanics (trade orders queued into world state)
+- `WorldSnapshot` message carrying explicit satiation state (NeedsPanel
+  currently uses demand as a satiation proxy)
+- Event system
 
 ---
 
@@ -193,47 +243,58 @@ economic classes emerge from the math rather than being authored.
 
 ### Prerequisites
 
-- Rust (via rustup — `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`)
+- Rust (via rustup)
 - Python 3.11+
-- Godot 4.2+ (.NET build) — for the game frontend only
+- Godot 4.3+ — for the game frontend only
 
 ### Bootstrap
 
 ```bash
-# 1. Validate repo structure
-python tools/validate_repo.py
+# Install Python package
+pip install -e models/
 
-# 2. Install Python package (minimal — no heavy ML deps yet)
-pip install -e models/ --no-deps
-
-# 3. Verify Python model works independently
-python tools/run_propensities.py
-
-# 4. Build Rust workspace
+# Build Rust workspace
 cargo build
 
-# 5. Run headless sim
-cargo run -p spacesim-cli -- --ticks 10
+# Run headless sim (10 weekly ticks, standard human species)
+cargo run -p spacesim-cli -- --ticks 10 --species data/species/standard_human.toml
 
-# 6. Run headless sim with species (once PyO3 bridge is green)
-cargo run -p spacesim-cli -- --species data/species/standard_human.toml --ticks 10
+# Run with IPC server for Godot (runs indefinitely at ~1 tick/second)
+cargo run -p spacesim-cli -- --ipc --species data/species/standard_human.toml
+
+# Then open the Godot project (in a second terminal or the Godot editor)
+godot --path game/
+
+# Run full test suite
+bash tests/run_all.sh
 ```
 
-Steps 1–5 work without Godot. The game frontend is the last layer, not the
-first.
+### Modding
 
-### Developer Tools
+All game data lives in `data/`. No code required for most changes:
 
-```bash
-# Check repo structure against expected layout
-python tools/validate_repo.py
+- **New star:** copy `data/bodies/sol.toml`, adjust `luminosity`, `temperature_k`
+- **New planet:** copy `data/bodies/earth.toml`, adjust `semi_major_axis`,
+  `axial_tilt`, `eccentricity`; `tidally_locked = true` collapses seasons
+- **New species:** copy `data/species/standard_human.toml`, or derive one
+  automatically from a planet+star pair:
 
-# Generate any missing stub files
-python tools/bootstrap_stubs.py
-
-# Run the behavioral model standalone (no Rust required)
-python tools/run_propensities.py
+```python
+from spacesim_models.api import generate_species_from_environment
+result = generate_species_from_environment("data/bodies/my_planet.toml",
+                                           "data/bodies/my_star.toml")
+# result["pressures"] shows the six intermediate evolutionary pressure values
+# result["cognitive"], result["social"], result["stress"], result["development"]
+# contain the derived substrate parameters
 ```
+
+- **New commodity:** add a `[[commodity]]` block to any file in
+  `data/commodities/`; add it to `COMMODITY_CATEGORIES` in
+  `models/spacesim_models/orbital/season.py` to give it seasonal behavior
+
+The key chain: `axial_tilt` + `eccentricity` → `growing_season_fraction` →
+agricultural supply modifier → commodity prices → demand pressure → needs
+satiation. See the modder's chain in the docs for the full variable map.
 
 ---
 
@@ -243,47 +304,27 @@ All design documents live in `/docs` under version control alongside the code.
 
 | Document | Contents |
 |---|---|
-| `game_strategy.md` | Top-level architecture, stack rationale, development phases |
 | `behavioral_model_design.md` | OCEAN system, needs hierarchy, modular synthesizer architecture |
 | `lifecycle_heritability_design.md` | Lifecycle stages, trait inheritance, demographic model |
-| `substrate_standard_human_design.md` | Biological substrate layer, Standard Human parameters, race/class design, UI design |
-| `repo_architecture.md` | Repository layout, crate map, tooling, bootstrapping sequence |
-| `session_summary.md` | End-of-session state, current blocker analysis, next session plan |
-| `docs/adr/` | Architecture Decision Records — why decisions were made, not just what they are |
+| `substrate_standard_human_design.md` | Biological substrate layer, Standard Human parameters |
+| `repo_architecture.md` | Repository layout, crate map, tooling |
 
 ---
 
 ## Key Open Questions
-
-These are tracked here because they have architectural implications and should
-be decided deliberately rather than by default:
 
 - **Simulation scale:** Individual named NPCs, anonymous population buckets,
   or a hybrid? This shapes the Rust data model at a fundamental level.
 - **Player role:** Ship captain, faction leader, or detached economic actor?
   Shapes the entire UI and progression system.
 - **Trait plasticity:** Should OCEAN scores drift under sustained conditions,
-  or remain fixed within a generation? Fixed is simpler; drifting is richer.
-- **Substrate mutability:** Can a species' biological substrate change over
-  civilizational timescales? If so, at what rate and driven by what?
+  or remain fixed within a generation?
 - **Player psychology inference:** Should the game observe the player's
   behavior over time and build a psychological model of them that NPCs respond
-  to? Almost no games do this.
-- **Subprocess vs embedded Python:** Keep PyO3 in-process for low call
-  latency, or run Python as a subprocess for full isolation and hot reload?
-  Both are architecturally sound; the current environment blocker may resolve
-  this question in practice.
-- **Win conditions:** Emergent sandbox or authored campaign? Shapes content
-  investment entirely.
-
----
-
-## Contributing
-
-This is currently a solo exploratory project. The design is intentionally
-kept in documents rather than comments so that architectural reasoning is
-legible and revisitable. If you're reading this and the questions above
-interest you, the `/docs` folder is the right place to start.
+  to?
+- **Win conditions:** Emergent sandbox or authored campaign?
+- **Market dynamics depth:** The current clearing formula is a single-node
+  model. When does multi-node trade routing become load-bearing for gameplay?
 
 ---
 
