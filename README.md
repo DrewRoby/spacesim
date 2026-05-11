@@ -21,7 +21,10 @@ This project is built to be explored as much as played. The major architectural
 decisions were made to answer big questions with systems and leave room within
 those systems to experiment:
 
-**Answer big questions with systems.** Rather than deciding what factions will
+**Answer big questions with systems.** While the story mode will have pre-
+determined races and worlds, their interactions and most events (  ;D  ) will
+be determined by a living, breathing market system. In the creative mode, of course,
+there is no end of customization. Rather than deciding what factions will
 exist, we model the psychology that produces factions. Rather than scripting
 market behavior, we model the needs that drive demand. The interesting content
 is meant to emerge, not be authored.
